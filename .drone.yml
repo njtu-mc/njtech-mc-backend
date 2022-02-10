@@ -49,10 +49,7 @@ steps:
       key:
         from_secret: depoly_key
       script:
-        from_secret: depoly_script     
-
-image_pull_secrets:
-  - dockerconfig
+        from_secret: depoly_script
 
 volumes:
   - name: cache
