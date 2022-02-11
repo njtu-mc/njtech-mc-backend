@@ -1,7 +1,7 @@
 FROM harbor.jinhun.moe/drone/ubuntu:latest
 
-WORKDIR /app
 COPY target/release/njtech-mc-backend njtech-mc-backend
+COPY .env .env
 
 EXPOSE 8080
 

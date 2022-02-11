@@ -1,22 +1,26 @@
-use actix_web::{middleware, web, App, HttpRequest, HttpServer};
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+#[macro_use]
+extern crate validator_derive;
 
-async fn index(req: HttpRequest) -> &'static str {
-    println!("REQ: {:?}", req);
-    "Hello world!"
-}
+use std::{env, io};
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_web=info");
+mod app;
+
+#[actix_rt::main]
+async fn main() -> io::Result<()>  {
+    dotenv::dotenv().ok();
+
+    if env::var("RUST_LOG").ok().is_none() {
+        env::set_var("RUST_LOG", "conduit=debug,actix_web=info");
+    }
     env_logger::init();
 
-    HttpServer::new(|| {
-        App::new()
-            // enable logger
-            .wrap(middleware::Logger::default())
-            .service(web::resource("/").to(index))
-    })
-    .bind("0.0.0.0:8080")?
-    .run()
-    .await
+    app::start().await
 }
