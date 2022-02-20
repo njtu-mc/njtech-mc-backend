@@ -1,7 +1,9 @@
-// use crate::db::{new_pool, DbExecutor};
+pub mod oauth;
+
+use std::string::String;
+use crate::db::{new_pool, DbExecutor};
 use actix::prelude::{Addr, SyncArbiter};
 use actix_web::{
-    get,
     middleware::Logger,
     web::Data,
     web,
@@ -11,29 +13,40 @@ use actix_web::{
 };
 use actix_cors::Cors;
 use std::{env, io};
+use crate::app::oauth::form::OauthSetting;
 
 pub struct AppState {
-    // pub db: Addr<DbExecutor>,
+    pub db: Addr<DbExecutor>,
+    pub oauth_setting: oauth::form::OauthSetting,
 }
 
-#[get("/")]
 async fn index(_req: HttpRequest) -> &'static str {
     "Hello 1!"
 }
 
-pub async fn start() -> io::Result<()>  {
+pub async fn start() -> io::Result<()> {
     let frontend_origin = env::var("FRONTEND_ORIGIN").ok();
-
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    // let database_pool = new_pool(database_url).expect("Failed to create pool.");
-    // let database_address = SyncArbiter::start(num_cpus::get(), move || DbExecutor(database_pool.clone()));
+    let oauth = OauthSetting{
+        client_id: env::var("CLIENT_ID").expect("CLIENT_ID must be set"),
+        client_secret:  env::var("CLIENT_SECRET").expect("CLIENT_SECRET must be set"),
+        redirect_url: env::var("REDIRECT_URL").expect("REDIRECT_URL must be set")
+    };
+    let bind_address = match env::var("BIND_ADDRESS") {
+        Ok(v) => v,
+        _ => String::from("0.0.0.0:8080")
+    };
 
-    let bind_address = env::var("BIND_ADDRESS").expect("BIND_ADDRESS is not set");
+    let database_pool = new_pool(database_url);
+    let database_address = SyncArbiter::start(num_cpus::get(), move || DbExecutor(database_pool.clone()));
+
+
 
     let server = HttpServer::new(move || {
-        // let state = AppState {
-        //      db: database_address.clone(),
-        // };
+        let state = AppState {
+            db: database_address.clone(),
+            oauth_setting: oauth.clone(),
+        };
         let cors = match frontend_origin {
             Some(ref origin) => Cors::default()
                 .allowed_origin(origin)
@@ -46,7 +59,7 @@ pub async fn start() -> io::Result<()>  {
                 .max_age(3600),
         };
         App::new()
-            // .register_data(Data::new(state))
+            .app_data(Data::new(state))
             .wrap(Logger::default())
             .wrap(cors)
             .configure(routes)
@@ -61,8 +74,11 @@ pub async fn start() -> io::Result<()>  {
 
 fn routes(app: &mut web::ServiceConfig) {
     app
-        .service(index)
+        .service(web::resource("/").to(index))
+        .service(web::resource("/auth")
+            .route(web::get().to(oauth::auth))
+        )
         .service(web::scope("/api")
-            // User routes ↓
+                 // User routes ↓
         );
 }

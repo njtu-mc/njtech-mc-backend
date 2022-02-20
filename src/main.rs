@@ -1,17 +1,15 @@
-#[macro_use]
-extern crate diesel;
-#[macro_use]
-extern crate lazy_static;
+#![feature(in_band_lifetimes)]
+
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
-#[macro_use]
-extern crate validator_derive;
 
 use std::{env, io};
 
 mod app;
+mod db;
+mod error;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()>  {
