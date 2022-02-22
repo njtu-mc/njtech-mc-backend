@@ -7,7 +7,6 @@ use diesel::{
 use derive_more::{Display};
 use serde_json::{Map as JsonMap, Value as JsonValue};
 use std::convert::From;
-use std::fmt::{Display, Formatter};
 use awc::error::SendRequestError;
 use validator::ValidationErrors;
 
@@ -124,6 +123,12 @@ impl From<DieselError> for Error {
 
 impl From<PoolError> for Error {
     fn from(_error: PoolError) -> Self {
+        Error::InternalServerError
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(_error: jsonwebtoken::errors::Error) -> Self {
         Error::InternalServerError
     }
 }

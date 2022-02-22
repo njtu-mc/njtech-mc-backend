@@ -21,12 +21,6 @@ pub struct XblAuthorizationTokenResp {
     pub token: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct MCProfileResp {
-    pub id: String,
-    pub name: String,
-}
-
 #[derive(Debug)]
 pub struct XSTSAuthorizationTokenResp {
     pub token: String,
@@ -73,7 +67,7 @@ pub struct AuthorizationToken<'a> {
 }
 
 impl AuthorizationToken<'a> {
-    pub fn new(code: &'a str, setting : & &'a OauthSetting) -> Self {
+    pub fn new(code: &'a str, setting: &&'a OauthSetting) -> Self {
         AuthorizationToken {
             client_id: &setting.client_id,
             client_secret: &setting.client_secret,
@@ -162,3 +156,24 @@ impl MCAuthorizationToken {
         }
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct MCProfileResp {
+    #[validate(
+        length(
+            min = 1,
+            max = 100,
+            message = "fails validation - must be 1-100 characters long"
+        ),
+    )]
+    pub id: String,
+    #[validate(
+        length(
+            min = 1,
+            max = 50,
+            message = "fails validation - must be 1-50 characters long"
+        ),
+    )]
+    pub name: String,
+}
+

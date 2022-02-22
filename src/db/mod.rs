@@ -1,5 +1,8 @@
+pub mod oauth;
+
 use actix::prelude::{Actor, SyncContext};
 use diesel::{
+
     mysql::MysqlConnection,
     r2d2::{self, ConnectionManager, Pool},
 };

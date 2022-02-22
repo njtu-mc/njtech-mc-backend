@@ -1,11 +1,12 @@
 table! {
-    user (id) {
+    users (id) {
         id -> Integer,
-        create_at -> Datetime,
-        update_at -> Datetime,
-        name -> Varchar,
-        email -> Varchar,
-        referrer_id -> Integer,
+        created_at -> Datetime,
+        updated_at -> Datetime,
         mc_id -> Varchar,
+        mc_name -> Varchar,
+        name -> Nullable<Varchar>,
+        email -> Nullable<Varchar>,
+        referrer_id -> Nullable<Integer>,
     }
 }
