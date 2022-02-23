@@ -1,14 +1,13 @@
-pub(crate) mod form;
+mod form;
 
-use form::*;
+pub use self::form::*;
 use std::fmt::Debug;
+use actix_identity::Identity;
 use actix_web::{HttpResponse};
-use actix_web::cookie::Cookie;
 use actix_web::web::{Query};
 use crate::app::AppState;
 use crate::error::Error;
 use validator::{Validate};
-use crate::util::jwt::CanGenerateJwt;
 
 #[derive(Debug, Deserialize)]
 pub struct AuthQuery {
@@ -48,6 +47,7 @@ async fn login(code: &str, setting: &form::OauthSetting) -> Result<MCProfileResp
 pub async fn auth(
     params: Query<AuthQuery>,
     app_state: actix_web::web::Data<AppState>,
+    id: Identity
 ) -> Result<HttpResponse, Error> {
     let mc_profile = login(&params.code, &app_state.oauth_setting).await?;
 
@@ -61,15 +61,11 @@ pub async fn auth(
         }
     }?;
 
-    let cookie = Cookie::build("token", user.generate_jwt()?)
-        .domain("njtumc.org")
-        .path("/")
-        .finish();
+    id.remember(user.id.to_string());
 
     Ok(
         HttpResponse::Found()
             .append_header(("Location", "https://njtumc.org"))
-            .cookie(cookie)
             .finish()
     )
 }

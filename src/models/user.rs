@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use crate::schema::users;
 
-#[derive(Debug, Queryable, Identifiable)]
+#[derive(Debug, Queryable, Identifiable, Serialize)]
 #[table_name = "users"]
 pub struct User {
     pub id: i32,

@@ -1,1 +1,3 @@
-pub(crate) mod user;
+mod user;
+
+pub use self::user::*;

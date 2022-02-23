@@ -1,4 +1,5 @@
 pub mod oauth;
+pub mod users;
 
 use std::string::String;
 use crate::db::{new_pool, DbExecutor};
@@ -13,15 +14,17 @@ use actix_web::{
 };
 use actix_cors::Cors;
 use std::{env, io};
-use crate::app::oauth::form::OauthSetting;
+use actix_identity::{CookieIdentityPolicy, IdentityService};
+use rand::Rng;
+use crate::app::oauth::OauthSetting;
 
 pub struct AppState {
     pub db: Addr<DbExecutor>,
-    pub oauth_setting: oauth::form::OauthSetting,
+    pub oauth_setting: OauthSetting,
 }
 
 async fn index(_req: HttpRequest) -> &'static str {
-    "Hello 1!"
+    "Hello mother fucker!"
 }
 
 pub async fn start() -> io::Result<()> {
@@ -40,7 +43,7 @@ pub async fn start() -> io::Result<()> {
     let database_pool = new_pool(database_url);
     let database_address = SyncArbiter::start(num_cpus::get(), move || DbExecutor(database_pool.clone()));
 
-
+    let private_key = rand::thread_rng().gen::<[u8; 32]>();
 
     let server = HttpServer::new(move || {
         let state = AppState {
@@ -62,6 +65,11 @@ pub async fn start() -> io::Result<()> {
             .app_data(Data::new(state))
             .wrap(Logger::default())
             .wrap(cors)
+            .wrap(IdentityService::new(
+                CookieIdentityPolicy::new(&private_key)
+                    .name("auth")
+                    .secure(true),
+            ))
             .configure(routes)
     })
         .bind(&bind_address)
@@ -79,6 +87,8 @@ fn routes(app: &mut web::ServiceConfig) {
             .route(web::get().to(oauth::auth))
         )
         .service(web::scope("/api")
-                 // User routes ↓
+                     .service(web::resource("user")
+                         .route(web::get().to(users::get_user))
+                     )
         );
 }

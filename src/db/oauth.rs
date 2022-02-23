@@ -1,9 +1,11 @@
 use super::DbExecutor;
-use crate::app::oauth::form::MCProfileResp;
+use crate::app::oauth::MCProfileResp;
 use crate::{error};
-use crate::models::user::{NewUser, User};
+use crate::models::{NewUser, User};
 use actix::prelude::*;
 use diesel::prelude::*;
+use crate::app::users::QueryUser;
+use crate::error::Error;
 
 impl Message for MCProfileResp {
     type Result = Result<User, error::Error>;
@@ -38,6 +40,27 @@ impl Handler<MCProfileResp> for DbExecutor {
                     .first::<User>(conn)?
             }
         };
+        Ok(user)
+    }
+}
+
+impl Message for QueryUser {
+    type Result = Result<User, error::Error>;
+}
+
+impl Handler<QueryUser> for DbExecutor {
+    type Result = Result<User, error::Error>;
+
+    fn handle(&mut self, msg: QueryUser, _: &mut Self::Context) -> Self::Result {
+        use crate::schema::users::dsl::*;
+
+        let conn = &self.0.get()?;
+
+        let user = users
+            .filter(id.eq(&msg.id))
+            .first::<User>(conn)
+            .optional()?.ok_or(Error::Forbidden)?;
+
         Ok(user)
     }
 }

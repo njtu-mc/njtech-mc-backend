@@ -21,8 +21,8 @@ pub enum Error {
     // Unauthorized,
 
     // 403
-    // #[display(fmt = "Forbidden")]
-    // Forbidden,
+    #[display(fmt = "Forbidden")]
+    Forbidden,
 
     // 404
     #[display(fmt = "NotFound")]
@@ -46,7 +46,7 @@ impl ResponseError for Error {
                 HttpResponse::InternalServerError().json(message)
             }
             // Error::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
-            // Error::Forbidden => HttpResponse::Forbidden().json("Forbidden"),
+            Error::Forbidden => HttpResponse::Forbidden().json("Forbidden"),
             Error::NotFound(ref message) => HttpResponse::NotFound().json(message),
             Error::UnprocessableEntity(ref message) => {
                 HttpResponse::build(StatusCode::UNPROCESSABLE_ENTITY).json(message)
@@ -61,7 +61,7 @@ impl ResponseError for Error {
         match *self {
             Error::BadRequest(_) => StatusCode::BAD_REQUEST,
             // Error::Unauthorized => StatusCode::UNAUTHORIZED,
-            // Error::Forbidden => StatusCode::FORBIDDEN,
+            Error::Forbidden => StatusCode::FORBIDDEN,
             Error::NotFound(_) => StatusCode::NOT_FOUND,
             Error::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Error::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
@@ -123,12 +123,6 @@ impl From<DieselError> for Error {
 
 impl From<PoolError> for Error {
     fn from(_error: PoolError) -> Self {
-        Error::InternalServerError
-    }
-}
-
-impl From<jsonwebtoken::errors::Error> for Error {
-    fn from(_error: jsonwebtoken::errors::Error) -> Self {
         Error::InternalServerError
     }
 }
