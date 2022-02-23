@@ -11,7 +11,7 @@ pub struct QueryUser {
 }
 
 pub async fn get_user(state: Data<AppState>,
-                         id: Identity,
+                      id: Identity,
 ) -> Result<HttpResponse, Error> {
     let db = state.db.clone();
 
@@ -29,4 +29,14 @@ pub async fn get_user(state: Data<AppState>,
         Err(e) => Err(Error::from(e)),
         Ok(res) => Ok(HttpResponse::Ok().json(res)),
     }
+}
+
+pub async fn logout(id: Identity) -> Result<HttpResponse, Error> {
+    id.forget();
+
+    Ok(
+        HttpResponse::Found()
+            .append_header(("Location", "https://njtumc.org"))
+            .finish()
+    )
 }

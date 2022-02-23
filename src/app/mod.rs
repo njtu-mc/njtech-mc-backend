@@ -30,10 +30,10 @@ async fn index(_req: HttpRequest) -> &'static str {
 pub async fn start() -> io::Result<()> {
     let frontend_origin = env::var("FRONTEND_ORIGIN").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let oauth = OauthSetting{
+    let oauth = OauthSetting {
         client_id: env::var("CLIENT_ID").expect("CLIENT_ID must be set"),
-        client_secret:  env::var("CLIENT_SECRET").expect("CLIENT_SECRET must be set"),
-        redirect_url: env::var("REDIRECT_URL").expect("REDIRECT_URL must be set")
+        client_secret: env::var("CLIENT_SECRET").expect("CLIENT_SECRET must be set"),
+        redirect_url: env::var("REDIRECT_URL").expect("REDIRECT_URL must be set"),
     };
     let bind_address = match env::var("BIND_ADDRESS") {
         Ok(v) => v,
@@ -87,8 +87,11 @@ fn routes(app: &mut web::ServiceConfig) {
             .route(web::get().to(oauth::auth))
         )
         .service(web::scope("/api")
-                     .service(web::resource("user")
-                         .route(web::get().to(users::get_user))
-                     )
+            .service(web::resource("user")
+                .route(web::get().to(users::get_user))
+            )
+        )
+        .service(web::resource("users/logout")
+            .route(web::get().to_async(users::logout))
         );
 }
