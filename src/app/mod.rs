@@ -15,6 +15,7 @@ use actix_web::{
 use actix_cors::Cors;
 use std::{env, io};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web::cookie::time::Duration;
 use rand::Rng;
 use crate::app::oauth::OauthSetting;
 
@@ -67,8 +68,10 @@ pub async fn start() -> io::Result<()> {
             .wrap(cors)
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&private_key)
+                    .domain("njtumc.org")
+                    .max_age(Duration::days(21))
                     .name("auth")
-                    .secure(true),
+                    .secure(false),
             ))
             .configure(routes)
     })
@@ -90,8 +93,8 @@ fn routes(app: &mut web::ServiceConfig) {
             .service(web::resource("user")
                 .route(web::get().to(users::get_user))
             )
-        )
-        .service(web::resource("users/logout")
-            .route(web::get().to_async(users::logout))
+            .service(web::resource("user/logout")
+                .route(web::get().to(users::logout))
+            )
         );
 }
