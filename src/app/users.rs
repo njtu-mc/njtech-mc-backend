@@ -15,7 +15,7 @@ pub async fn get_user(state: Data<AppState>,
 ) -> Result<HttpResponse, Error> {
     let db = state.db.clone();
 
-    let id: Result<i32, ParseIntError> = id.identity().ok_or(Error::Forbidden)?.parse();
+    let id: Result<i32, ParseIntError> = id.identity().ok_or(Error::Unauthorized)?.parse();
     let id = match id {
         Ok(id) => id,
         Err(_) => {

@@ -17,8 +17,8 @@ pub enum Error {
     BadRequest(JsonValue),
 
     // 401
-    // #[display(fmt = "Unauthorized")]
-    // Unauthorized,
+    #[display(fmt = "Unauthorized")]
+    Unauthorized,
 
     // 403
     #[display(fmt = "Forbidden")]
@@ -45,7 +45,7 @@ impl ResponseError for Error {
             Error::BadRequest(ref message) => {
                 HttpResponse::InternalServerError().json(message)
             }
-            // Error::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
+            Error::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
             Error::Forbidden => HttpResponse::Forbidden().json("Forbidden"),
             Error::NotFound(ref message) => HttpResponse::NotFound().json(message),
             Error::UnprocessableEntity(ref message) => {
@@ -60,7 +60,7 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match *self {
             Error::BadRequest(_) => StatusCode::BAD_REQUEST,
-            // Error::Unauthorized => StatusCode::UNAUTHORIZED,
+            Error::Unauthorized => StatusCode::UNAUTHORIZED,
             Error::Forbidden => StatusCode::FORBIDDEN,
             Error::NotFound(_) => StatusCode::NOT_FOUND,
             Error::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
