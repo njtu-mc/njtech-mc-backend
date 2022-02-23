@@ -17,25 +17,30 @@ pub struct AuthQuery {
 
 async fn login(code: &str, setting: &form::OauthSetting) -> Result<MCProfileResp, Error> {
     let client = awc::Client::default();
-    let response = client.post("https://login.live.com/oauth20_token.srf") // <- Create request builder
+    let response = client.post("https://login.live.com/oauth20_token.srf")
         .send_form(&AuthorizationToken::new(code, &setting))
         .await?.json::<AuthorizationTokenResp>().await?;
 
-    let response = client.post("https://user.auth.xboxlive.com/user/authenticate") // <- Create request builder
+    let response = client.post("https://user.auth.xboxlive.com/user/authenticate")
         .send_json(&XBLAuthorizationToken::new(&response.access_token))
         .await?.json::<XblAuthorizationTokenResp>().await?;
 
-    let response = client.post("https://xsts.auth.xboxlive.com/xsts/authorize") // <- Create request builder
+    let response = client.post("https://xsts.auth.xboxlive.com/xsts/authorize")
         .send_json(&XSTSAuthorizationToken::new(&response.token))
         .await?.json::<XSTSAuthorizationTokenResp>().await?;
 
-    let response = client.post("https://api.minecraftservices.com/authentication/login_with_xbox") // <- Create request builder
+    let response = client.post("https://api.minecraftservices.com/authentication/login_with_xbox")
         .send_json(&MCAuthorizationToken::new(&response.uhs, &response.token))
         .await?.json::<AuthorizationTokenResp>().await?;
 
-    let response = client.get("https://api.minecraftservices.com/minecraft/profile") // <- Create request builder
-        .insert_header(("Authorization", format!("Bearer {}",response.access_token )))
-        .send().await?.json::<MCProfileResp>().await?;
+    let response = match client.get("https://api.minecraftservices.com/minecraft/profile")
+        .insert_header(("Authorization", format!("Bearer {}", response.access_token)))
+        .send().await?.json::<MCProfileResp>().await {
+        Ok(o) => o,
+        Err(_) => {
+            return Err(Error::BadRequest(json!("The server has not found anything matching minecraft profile")));
+        }
+    };
 
     Ok(response)
 }
@@ -50,17 +55,17 @@ pub async fn auth(
     let user = match mc_profile.validate() {
         Ok(_) => {
             db.send(mc_profile).await?
-        },
+        }
         Err(_) => {
-            return Err(Error::BadRequest);
+            return Err(Error::InternalServerError);
         }
     }?;
 
-    let cookie = Cookie::build("token",  user.generate_jwt()?)
+    let cookie = Cookie::build("token", user.generate_jwt()?)
         .domain("njtumc.org")
         .path("/")
         .finish();
-   
+
     Ok(
         HttpResponse::Found()
             .append_header(("Location", "https://njtumc.org"))

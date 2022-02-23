@@ -14,15 +14,15 @@ use validator::ValidationErrors;
 pub enum Error {
     // 400
     #[display(fmt = "BadRequest ")]
-    BadRequest,
+    BadRequest(JsonValue),
 
     // 401
-    #[display(fmt = "Unauthorized")]
-    Unauthorized(JsonValue),
+    // #[display(fmt = "Unauthorized")]
+    // Unauthorized,
 
     // 403
-    #[display(fmt = "Forbidden")]
-    Forbidden(JsonValue),
+    // #[display(fmt = "Forbidden")]
+    // Forbidden,
 
     // 404
     #[display(fmt = "NotFound")]
@@ -42,11 +42,11 @@ pub enum Error {
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         match *self {
-            Error::BadRequest => {
-                HttpResponse::InternalServerError().json("Bad Request")
+            Error::BadRequest(ref message) => {
+                HttpResponse::InternalServerError().json(message)
             }
-            Error::Unauthorized(ref message) => HttpResponse::Unauthorized().json(message),
-            Error::Forbidden(ref message) => HttpResponse::Forbidden().json(message),
+            // Error::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
+            // Error::Forbidden => HttpResponse::Forbidden().json("Forbidden"),
             Error::NotFound(ref message) => HttpResponse::NotFound().json(message),
             Error::UnprocessableEntity(ref message) => {
                 HttpResponse::build(StatusCode::UNPROCESSABLE_ENTITY).json(message)
@@ -59,9 +59,9 @@ impl ResponseError for Error {
 
     fn status_code(&self) -> StatusCode {
         match *self {
-            Error::BadRequest => StatusCode::BAD_REQUEST,
-            Error::Unauthorized(_) => StatusCode::UNAUTHORIZED,
-            Error::Forbidden(_) => StatusCode::FORBIDDEN,
+            Error::BadRequest(_) => StatusCode::BAD_REQUEST,
+            // Error::Unauthorized => StatusCode::UNAUTHORIZED,
+            // Error::Forbidden => StatusCode::FORBIDDEN,
             Error::NotFound(_) => StatusCode::NOT_FOUND,
             Error::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Error::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
@@ -77,7 +77,7 @@ impl From<SendRequestError> for Error {
 
 impl From<awc::error::JsonPayloadError> for Error {
     fn from(_error: awc::error::JsonPayloadError) -> Self {
-        Error::BadRequest
+        Error::BadRequest( json!("BadRequest"))
     }
 }
 
