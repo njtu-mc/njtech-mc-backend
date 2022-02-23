@@ -1,4 +1,5 @@
 use chrono::NaiveDateTime;
+use crate::app::oauth::MCProfileResp;
 use crate::schema::users;
 
 #[derive(Debug, Queryable, Identifiable, Serialize)]
@@ -10,6 +11,7 @@ pub struct User {
     pub mc_id: String,
     pub mc_name: String,
     pub name: Option<String>,
+    pub sex: Option<i32>,
     pub email: Option<String>,
     pub referrer_id: Option<i32>,
 }
@@ -20,8 +22,22 @@ pub struct NewUser {
     pub mc_name: String,
     pub mc_id: String,
     pub name: Option<String>,
+    pub sex: Option<i32>,
     pub email: Option<String>,
     pub referrer_id: Option<i32>,
+}
+
+impl std::convert::From<MCProfileResp> for NewUser {
+    fn from(u: MCProfileResp) -> Self {
+        NewUser {
+            mc_name: u.name,
+            mc_id: u.id,
+            name: None,
+            sex: None,
+            email: None,
+            referrer_id: None,
+        }
+    }
 }
 
 #[derive(Debug, AsChangeset)]

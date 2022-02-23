@@ -52,7 +52,7 @@ pub async fn auth(
     let mc_profile = login(&params.code, &app_state.oauth_setting).await?;
 
     let db = app_state.db.clone();
-    let user = match mc_profile.validate() {
+    let user_id = match mc_profile.validate() {
         Ok(_) => {
             db.send(mc_profile).await?
         }
@@ -61,7 +61,7 @@ pub async fn auth(
         }
     }?;
 
-    id.remember(user.id.to_string());
+    id.remember(user_id.to_string());
 
     Ok(
         HttpResponse::Found()

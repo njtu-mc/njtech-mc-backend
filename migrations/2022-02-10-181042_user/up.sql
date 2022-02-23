@@ -7,7 +7,8 @@ create table users
     mc_id       varchar(100) NOT NULL default '' comment 'minecraft 中的 id',
     mc_name     varchar(50)  NOT NULL default '' comment 'minecraft 中的名字，每次登录时会更新',
     `name`      varchar(30) comment '姓名',
-    email       varchar(30) comment '邮箱, 如果有 njtech.edu.cn 邮箱可以直接注册',
+    `sex`       int comment '性别',
+    email       varchar(30) comment '邮箱',
     referrer_id int comment '推荐人 id，没有南工邮箱需要',
 
     KEY `created_at` (created_at),

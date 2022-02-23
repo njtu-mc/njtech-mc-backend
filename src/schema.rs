@@ -6,6 +6,7 @@ table! {
         mc_id -> Varchar,
         mc_name -> Varchar,
         name -> Nullable<Varchar>,
+        sex -> Nullable<Integer>,
         email -> Nullable<Varchar>,
         referrer_id -> Nullable<Integer>,
     }
