@@ -5,8 +5,8 @@ table! {
         updated_at -> Datetime,
         mc_id -> Varchar,
         mc_name -> Varchar,
+        gender -> Integer,
         name -> Nullable<Varchar>,
-        sex -> Nullable<Integer>,
         email -> Nullable<Varchar>,
         referrer_id -> Nullable<Integer>,
     }

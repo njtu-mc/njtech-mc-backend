@@ -1,4 +1,5 @@
 pub mod oauth;
+pub mod user;
 
 use actix::prelude::{Actor, SyncContext};
 use diesel::{

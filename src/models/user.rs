@@ -10,8 +10,8 @@ pub struct User {
     pub updated_at: NaiveDateTime,
     pub mc_id: String,
     pub mc_name: String,
+    pub gender: i32,
     pub name: Option<String>,
-    pub sex: Option<i32>,
     pub email: Option<String>,
     pub referrer_id: Option<i32>,
 }
@@ -22,7 +22,7 @@ pub struct NewUser {
     pub mc_name: String,
     pub mc_id: String,
     pub name: Option<String>,
-    pub sex: Option<i32>,
+    pub gender: i32,
     pub email: Option<String>,
     pub referrer_id: Option<i32>,
 }
@@ -33,7 +33,7 @@ impl std::convert::From<MCProfileResp> for NewUser {
             mc_name: u.name,
             mc_id: u.id,
             name: None,
-            sex: None,
+            gender: 0,
             email: None,
             referrer_id: None,
         }

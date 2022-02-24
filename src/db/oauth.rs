@@ -4,8 +4,6 @@ use crate::{error};
 use crate::models::{NewUser, User};
 use actix::prelude::*;
 use diesel::prelude::*;
-use crate::app::users::QueryUser;
-use crate::error::Error;
 
 impl Message for MCProfileResp {
     type Result = Result<i32, error::Error>;
@@ -26,18 +24,6 @@ impl Handler<MCProfileResp> for DbExecutor {
                 self.create_user(msg.into())?.id
             }
         })
-    }
-}
-
-impl Message for QueryUser {
-    type Result = Result<User, error::Error>;
-}
-
-impl Handler<QueryUser> for DbExecutor {
-    type Result = Result<User, error::Error>;
-
-    fn handle(&mut self, msg: QueryUser, _: &mut Self::Context) -> Self::Result {
-        Ok(self.get_user_by_id(msg.id)?.ok_or(Error::Forbidden)?)
     }
 }
 
@@ -72,15 +58,5 @@ impl DbExecutor {
         Ok(users
             .filter(mc_id.eq(&new_user.mc_id))
             .first::<User>(conn)?)
-    }
-
-    fn get_user_by_id(&mut self, _id: i32) -> Result<Option<User>, error::Error> {
-        use crate::schema::users::dsl::*;
-        let conn = &self.0.get()?;
-
-        Ok(users
-            .filter(id.eq(_id))
-            .first::<User>(conn)
-            .optional()?)
     }
 }

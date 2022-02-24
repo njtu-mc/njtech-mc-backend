@@ -6,8 +6,8 @@ create table users
     updated_at  DATETIME     NOT NULL default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后修改时间',
     mc_id       varchar(100) NOT NULL default '' comment 'minecraft 中的 id',
     mc_name     varchar(50)  NOT NULL default '' comment 'minecraft 中的名字，每次登录时会更新',
-    `name`      varchar(30) comment '姓名',
-    `sex`       int comment '性别',
+    `gender`       int          NOT NULL default 0 comment '性别 1 - 男， 2 - 女， 其他 - 未知',
+    `name`      varchar(30) comment '姓名 如果存在表示用户已激活',
     email       varchar(30) comment '邮箱',
     referrer_id int comment '推荐人 id，没有南工邮箱需要',
 

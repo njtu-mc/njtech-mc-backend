@@ -14,10 +14,12 @@ use actix_web::{
 };
 use actix_cors::Cors;
 use std::{env, io};
-use actix_identity::{CookieIdentityPolicy, IdentityService};
+use std::num::ParseIntError;
+use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
 use actix_web::cookie::time::Duration;
 use rand::Rng;
 use crate::app::oauth::OauthSetting;
+use crate::error::Error;
 
 pub struct AppState {
     pub db: Addr<DbExecutor>,
@@ -82,7 +84,6 @@ pub async fn start() -> io::Result<()> {
     server.run().await
 }
 
-
 fn routes(app: &mut web::ServiceConfig) {
     app
         .service(web::resource("/").to(index))
@@ -93,8 +94,19 @@ fn routes(app: &mut web::ServiceConfig) {
             .service(web::resource("user")
                 .route(web::get().to(users::get_user))
             )
+            .service(web::resource("user/gender")
+                .route(web::put().to(users::put_user_gender))
+            )
             .service(web::resource("user/logout")
                 .route(web::get().to(users::logout))
             )
         );
+}
+
+pub fn get_login_user_id(id: Identity) -> Result<i32, Error> {
+    let id: Result<i32, ParseIntError> = id.identity().ok_or(Error::Unauthorized)?.parse();
+    match id {
+        Ok(id) => Ok(id),
+        Err(_) => Err(Error::Forbidden),
+    }
 }
