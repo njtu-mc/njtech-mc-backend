@@ -7,8 +7,10 @@ use diesel::{
 use derive_more::{Display};
 use serde_json::{Map as JsonMap, Value as JsonValue};
 use std::convert::From;
+use std::num::ParseIntError;
 use std::sync::{MutexGuard, PoisonError};
 use awc::error::SendRequestError;
+use redis::RedisError;
 use validator::ValidationErrors;
 
 #[derive(Debug, Display)]
@@ -88,21 +90,17 @@ impl From<MailboxError> for Error {
     }
 }
 
-// impl From<JwtError> for Error {
-//     fn from(error: JwtError) -> Self {
-//         match error.kind() {
-//             JwtErrorKind::InvalidToken => Error::Unauthorized(json!({
-//                 "error": "Token is invalid",
-//             })),
-//             JwtErrorKind::InvalidIssuer => Error::Unauthorized(json!({
-//                 "error": "Issuer is invalid",
-//             })),
-//             _ => Error::Unauthorized(json!({
-//                 "error": "An issue was found with the token provided",
-//             })),
-//         }
-//     }
-// }
+impl From<RedisError> for Error {
+    fn from(_error: RedisError) -> Self {
+        Error::InternalServerError
+    }
+}
+
+impl From<ParseIntError> for Error {
+    fn from(_error: ParseIntError) -> Self {
+        Error::InternalServerError
+    }
+}
 
 impl From<DieselError> for Error {
     fn from(error: DieselError) -> Self {

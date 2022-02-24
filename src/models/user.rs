@@ -13,7 +13,8 @@ pub struct User {
     pub gender: i32,
     pub name: Option<String>,
     pub email: Option<String>,
-    pub referrer_id: Option<i32>,
+    pub njtech_open_id: Option<String>,
+    pub school: Option<String>,
 }
 
 #[derive(Debug, Insertable)]
@@ -24,7 +25,8 @@ pub struct NewUser {
     pub name: Option<String>,
     pub gender: i32,
     pub email: Option<String>,
-    pub referrer_id: Option<i32>,
+    pub njtech_open_id: Option<String>,
+    pub school: Option<String>,
 }
 
 impl std::convert::From<MCProfileResp> for NewUser {
@@ -35,7 +37,8 @@ impl std::convert::From<MCProfileResp> for NewUser {
             name: None,
             gender: 0,
             email: None,
-            referrer_id: None,
+            njtech_open_id: None,
+            school: None
         }
     }
 }
@@ -47,5 +50,5 @@ pub struct UserChange {
     pub mc_id: Option<String>,
     pub name: Option<String>,
     pub email: Option<String>,
-    pub referrer_id: Option<i32>,
+    pub njtech_open_id: Option<String>,
 }

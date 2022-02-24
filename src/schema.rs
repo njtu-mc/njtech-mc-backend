@@ -8,6 +8,7 @@ table! {
         gender -> Integer,
         name -> Nullable<Varchar>,
         email -> Nullable<Varchar>,
-        referrer_id -> Nullable<Integer>,
+        njtech_open_id -> Nullable<Varchar>,
+        school -> Nullable<Varchar>,
     }
 }

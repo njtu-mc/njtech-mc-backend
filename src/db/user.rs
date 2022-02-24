@@ -1,5 +1,5 @@
 use actix::{Handler, Message};
-use crate::app::users::{QueryUser, UpdateGender};
+use crate::app::users::{OnlineUpdateUser, QueryUser, UpdateGender};
 use crate::db::DbExecutor;
 use crate::error;
 use crate::error::Error;
@@ -52,5 +52,31 @@ impl DbExecutor {
             .filter(id.eq(_id))
             .first::<User>(conn)
             .optional()?)
+    }
+}
+
+impl Message for OnlineUpdateUser {
+    type Result = Result<(), error::Error>;
+}
+
+impl Handler<OnlineUpdateUser> for DbExecutor {
+    type Result = Result<(), error::Error>;
+
+    fn handle(&mut self, msg: OnlineUpdateUser, _: &mut Self::Context) -> Self::Result {
+        use crate::schema::users::dsl::*;
+        let conn = &self.0.get()?;
+
+        if !users
+            .filter(njtech_open_id.eq(&msg.open_id))
+            .filter(school.eq("南京工业大学"))
+            .first::<User>(conn).is_err() {
+            return Err(Error::BadRequest(json!("该账号已经注册")));
+        }
+
+        diesel::update(users.filter(id.eq(msg.id)))
+            .set((njtech_open_id.eq(msg.open_id), email.eq(msg.email), name.eq(msg.realname), school.eq("南京工业大学")))
+            .execute(conn)?;
+
+        Ok(())
     }
 }

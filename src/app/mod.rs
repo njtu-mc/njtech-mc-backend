@@ -98,6 +98,7 @@ fn routes(app: &mut web::ServiceConfig) {
             )
             .service(web::resource("user/authorize")
                 .route(web::get().to(users::get_user_authorize))
+                .route(web::post().to(users::post_user_authorize))
             )
             .service(web::resource("user/gender")
                 .route(web::put().to(users::put_user_gender))

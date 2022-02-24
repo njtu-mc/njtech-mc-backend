@@ -10,6 +10,7 @@ use crate::app::{AppState, get_login_user_id};
 use crate::error::Error;
 use validator::{Validate};
 pub use form::*;
+use crate::app::oauth::OauthSetting;
 use crate::db::REDIS_CONN;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -55,7 +56,7 @@ pub async fn logout(id: Identity) -> Result<HttpResponse, Error> {
 pub async fn get_user_authorize(
     id: Identity,
 ) -> Result<HttpResponse, Error> {
-    let code : String = thread_rng()
+    let code: String = thread_rng()
         .sample_iter(&Alphanumeric)
         .take(15)
         .map(char::from)
@@ -69,4 +70,25 @@ pub async fn get_user_authorize(
             .append_header(("Location", format!("https://online.njtech.edu.cn/api/v1/minecraft/authorize?code={}", code)))
             .finish()
     )
+}
+
+pub async fn post_user_authorize(
+    online: Json<OnlinePost>,
+    oauth_setting: Data<OauthSetting>,
+    state: Data<AppState>,
+) -> Result<HttpResponse, Error> {
+    if oauth_setting.online_secret != online.secret {
+        return Err(Error::Forbidden);
+    }
+    let id: String = REDIS_CONN.lock()?.get(format!("code:{}", &online.code))?;
+    let id: i32 = id.parse()?;
+    let db = state.db.clone();
+
+    db.send(OnlineUpdateUser {
+        id,
+        realname: online.u.realname.clone(),
+        email: online.u.email.clone(),
+        open_id: online.u.open_id.clone(),
+    }).await??;
+    Ok(HttpResponse::Ok().finish())
 }
