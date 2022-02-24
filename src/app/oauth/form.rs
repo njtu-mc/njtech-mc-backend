@@ -5,6 +5,7 @@ pub struct OauthSetting {
     pub client_id: String,
     pub client_secret: String,
     pub redirect_url: String,
+    pub online_secret: String
 }
 
 #[derive(Debug, Deserialize)]

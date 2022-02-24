@@ -7,6 +7,7 @@ use diesel::{
 use derive_more::{Display};
 use serde_json::{Map as JsonMap, Value as JsonValue};
 use std::convert::From;
+use std::sync::{MutexGuard, PoisonError};
 use awc::error::SendRequestError;
 use validator::ValidationErrors;
 
@@ -127,11 +128,11 @@ impl From<PoolError> for Error {
     }
 }
 
-// impl From<PassErrorCode> for Error {
-//     fn from(_error: PassErrorCode) -> Self {
-//         Error::InternalServerError
-//     }
-// }
+impl From<PoisonError<MutexGuard<'_, redis::Connection>>> for Error {
+    fn from(_error: PoisonError<MutexGuard<'_, redis::Connection>>) -> Self {
+        Error::InternalServerError
+    }
+}
 
 impl From<ValidationErrors> for Error {
     fn from(errors: ValidationErrors) -> Self {

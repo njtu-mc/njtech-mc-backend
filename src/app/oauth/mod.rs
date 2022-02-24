@@ -47,9 +47,10 @@ async fn login(code: &str, setting: &form::OauthSetting) -> Result<MCProfileResp
 pub async fn auth(
     params: Query<AuthQuery>,
     app_state: actix_web::web::Data<AppState>,
-    id: Identity
+    id: Identity,
+    oauth_setting: actix_web::web::Data<OauthSetting>
 ) -> Result<HttpResponse, Error> {
-    let mc_profile = login(&params.code, &app_state.oauth_setting).await?;
+    let mc_profile = login(&params.code, &oauth_setting).await?;
 
     let db = app_state.db.clone();
     let user_id = match mc_profile.validate() {

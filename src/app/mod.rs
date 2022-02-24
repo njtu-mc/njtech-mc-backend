@@ -2,7 +2,7 @@ pub mod oauth;
 pub mod users;
 
 use std::string::String;
-use crate::db::{new_pool, DbExecutor};
+use crate::db::{new_pool, DbExecutor, new_redis};
 use actix::prelude::{Addr, SyncArbiter};
 use actix_web::{
     middleware::Logger,
@@ -23,7 +23,6 @@ use crate::error::Error;
 
 pub struct AppState {
     pub db: Addr<DbExecutor>,
-    pub oauth_setting: OauthSetting,
 }
 
 async fn index(_req: HttpRequest) -> &'static str {
@@ -33,10 +32,12 @@ async fn index(_req: HttpRequest) -> &'static str {
 pub async fn start() -> io::Result<()> {
     let frontend_origin = env::var("FRONTEND_ORIGIN").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let oauth = OauthSetting {
+
+    let oauth_setting = OauthSetting {
         client_id: env::var("CLIENT_ID").expect("CLIENT_ID must be set"),
         client_secret: env::var("CLIENT_SECRET").expect("CLIENT_SECRET must be set"),
         redirect_url: env::var("REDIRECT_URL").expect("REDIRECT_URL must be set"),
+        online_secret: env::var("ONLINE_SECRET").expect("ONLINE_SECRET must be set"),
     };
     let bind_address = match env::var("BIND_ADDRESS") {
         Ok(v) => v,
@@ -45,13 +46,13 @@ pub async fn start() -> io::Result<()> {
 
     let database_pool = new_pool(database_url);
     let database_address = SyncArbiter::start(num_cpus::get(), move || DbExecutor(database_pool.clone()));
+    new_redis();
 
     let private_key = rand::thread_rng().gen::<[u8; 32]>();
 
     let server = HttpServer::new(move || {
         let state = AppState {
             db: database_address.clone(),
-            oauth_setting: oauth.clone(),
         };
         let cors = match frontend_origin {
             Some(ref origin) => Cors::default()
@@ -65,6 +66,7 @@ pub async fn start() -> io::Result<()> {
                 .max_age(3600),
         };
         App::new()
+            .app_data(Data::new(oauth_setting.clone()))
             .app_data(Data::new(state))
             .wrap(Logger::default())
             .wrap(cors)
@@ -93,6 +95,9 @@ fn routes(app: &mut web::ServiceConfig) {
         .service(web::scope("/api")
             .service(web::resource("user")
                 .route(web::get().to(users::get_user))
+            )
+            .service(web::resource("user/authorize")
+                .route(web::get().to(users::get_user_authorize))
             )
             .service(web::resource("user/gender")
                 .route(web::put().to(users::put_user_gender))

@@ -8,6 +8,8 @@ extern crate serde_json;
 extern crate validator_derive;
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate lazy_static;
 
 use std::{env, io};
 
