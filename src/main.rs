@@ -12,6 +12,7 @@ extern crate diesel;
 extern crate lazy_static;
 
 use std::{env, io};
+use crate::util::send_authorize_code_mail;
 
 mod app;
 mod db;

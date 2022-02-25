@@ -8,7 +8,7 @@ use rand::distributions::Alphanumeric;
 use redis::Commands;
 use crate::app::{AppState, get_login_user_id};
 use crate::error::Error;
-use validator::{Validate};
+use validator::Validate;
 pub use form::*;
 use crate::app::oauth::OauthSetting;
 use crate::db::REDIS_CONN;

@@ -1,9 +1,9 @@
 use super::DbExecutor;
-use crate::app::oauth::MCProfileResp;
 use crate::{error};
 use crate::models::{NewUser, User};
 use actix::prelude::*;
 use diesel::prelude::*;
+use crate::app::oauth::MCProfileResp;
 
 impl Message for MCProfileResp {
     type Result = Result<i32, error::Error>;

@@ -1,10 +1,10 @@
 use actix::{Handler, Message};
-use crate::app::users::{OnlineUpdateUser, QueryUser, UpdateGender};
 use crate::db::DbExecutor;
 use crate::error;
 use crate::error::Error;
 use crate::models::User;
 use diesel::prelude::*;
+use crate::app::users::{OnlineUpdateUser, QueryUser, UpdateGender};
 
 impl Message for UpdateGender {
     type Result = Result<User, error::Error>;

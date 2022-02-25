@@ -1,5 +1,6 @@
 pub mod oauth;
 pub mod users;
+pub mod mail;
 
 use std::string::String;
 use crate::db::{new_pool, DbExecutor, new_redis};
@@ -10,7 +11,6 @@ use actix_web::{
     web,
     App, HttpRequest,
     HttpServer,
-    http::header::{AUTHORIZATION, CONTENT_TYPE},
 };
 use actix_cors::Cors;
 use std::{env, io};
@@ -54,22 +54,25 @@ pub async fn start() -> io::Result<()> {
         let state = AppState {
             db: database_address.clone(),
         };
-        let cors = match frontend_origin {
-            Some(ref origin) => Cors::default()
-                .allowed_origin(origin)
-                .allowed_headers(vec![AUTHORIZATION, CONTENT_TYPE])
-                .max_age(3600),
-            None => Cors::default()
-                .allowed_origin("*")
-                .send_wildcard()
-                .allowed_headers(vec![AUTHORIZATION, CONTENT_TYPE])
-                .max_age(3600),
-        };
+        // let cors = match frontend_origin {
+        //     Some(ref _origin) => Cors::default()
+        //         .allowed_origin(_origin)
+        //         .send_wildcard()
+        //         .allow_any_method()
+        //         .allow_any_header()
+        //         .max_age(3600),
+        //     None => Cors::default()
+        //         .allowed_origin("*")
+        //         .send_wildcard()
+        //         .allow_any_method()
+        //         .allow_any_header()
+        //         .max_age(3600),
+        // };
         App::new()
             .app_data(Data::new(oauth_setting.clone()))
             .app_data(Data::new(state))
             .wrap(Logger::default())
-            .wrap(cors)
+            // .wrap(cors)
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&private_key)
                     .domain("njtumc.org")
@@ -101,10 +104,14 @@ fn routes(app: &mut web::ServiceConfig) {
                 .route(web::post().to(users::post_user_authorize))
             )
             .service(web::resource("user/gender")
+                .route(web::post().to(users::put_user_gender))
                 .route(web::put().to(users::put_user_gender))
             )
             .service(web::resource("user/logout")
                 .route(web::get().to(users::logout))
+            )
+            .service(web::resource("email")
+                .route(web::post().to(mail::post_mail))
             )
         );
 }

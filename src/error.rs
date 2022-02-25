@@ -10,6 +10,7 @@ use std::convert::From;
 use std::num::ParseIntError;
 use std::sync::{MutexGuard, PoisonError};
 use awc::error::SendRequestError;
+use lettre::address::AddressError;
 use redis::RedisError;
 use validator::ValidationErrors;
 
@@ -129,6 +130,12 @@ impl From<PoolError> for Error {
 impl From<PoisonError<MutexGuard<'_, redis::Connection>>> for Error {
     fn from(_error: PoisonError<MutexGuard<'_, redis::Connection>>) -> Self {
         Error::InternalServerError
+    }
+}
+
+impl From<AddressError> for Error {
+    fn from(_error: AddressError) -> Self {
+        Error::BadRequest(json!("邮箱错误格式"))
     }
 }
 
