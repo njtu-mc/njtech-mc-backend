@@ -18,7 +18,7 @@ pub fn send_authorize_code_mail(user_id: i32, email_addr: &str) -> Result<(), Er
         .collect();
 
     let email = Message::builder()
-        .from("no_reply <no_reply@njtumc.moe>".parse().unwrap())
+        .from("no_reply <no_reply@njtumc.org>".parse().unwrap())
         .to(email_addr.parse()?)
         .subject("njtumc 验证码")
         .body(format!("您的验证码为：{}", code))
