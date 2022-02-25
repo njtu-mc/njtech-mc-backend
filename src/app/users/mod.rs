@@ -12,6 +12,7 @@ use validator::Validate;
 pub use form::*;
 use crate::app::oauth::OauthSetting;
 use crate::db::REDIS_CONN;
+use crate::util::check_mail_addr;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct QueryUser {
@@ -73,7 +74,7 @@ pub async fn get_user_authorize(
 }
 
 pub async fn post_user_authorize(
-    online: Json<OnlinePost>,
+    online: Json<OnlineUpdateUserAuthorize>,
     oauth_setting: Data<OauthSetting>,
     state: Data<AppState>,
 ) -> Result<HttpResponse, Error> {
@@ -84,11 +85,35 @@ pub async fn post_user_authorize(
     let id: i32 = id.parse()?;
     let db = state.db.clone();
 
-    db.send(OnlineUpdateUser {
+    db.send(UpdateUserAuthorize {
         id,
-        realname: online.u.realname.clone(),
+        real_name: online.u.real_name.clone(),
         email: online.u.email.clone(),
         open_id: online.u.open_id.clone(),
+    }).await??;
+    Ok(HttpResponse::Ok().finish())
+}
+
+pub async fn put_user_authorize(
+    form: Json<EmailUpdateUserAuthorize>,
+    id: Identity,
+    state: Data<AppState>,
+) -> Result<HttpResponse, Error> {
+    let form = form.into_inner();
+    form.validate()?;
+    let id = get_login_user_id(id)?;
+
+    let mut email = form.open_id.clone();
+    email.push_str("@njtech.edu.cn");
+
+    check_mail_addr(id, &email, &form.code)?;
+
+    let db = state.db.clone();
+    db.send(UpdateUserAuthorize {
+        id,
+        email,
+        open_id: form.open_id.clone(),
+        real_name: form.real_name
     }).await??;
     Ok(HttpResponse::Ok().finish())
 }

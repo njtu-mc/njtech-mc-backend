@@ -5,7 +5,7 @@ use crate::error::Error;
 use crate::models::User;
 use diesel::prelude::*;
 use crate::app::mail::UpdateMail;
-use crate::app::users::{OnlineUpdateUser, QueryUser, UpdateGender};
+use crate::app::users::{UpdateUserAuthorize, QueryUser, UpdateGender};
 
 impl Message for UpdateGender {
     type Result = Result<User, error::Error>;
@@ -66,14 +66,14 @@ impl DbExecutor {
     }
 }
 
-impl Message for OnlineUpdateUser {
+impl Message for UpdateUserAuthorize {
     type Result = Result<(), error::Error>;
 }
 
-impl Handler<OnlineUpdateUser> for DbExecutor {
+impl Handler<UpdateUserAuthorize> for DbExecutor {
     type Result = Result<(), error::Error>;
 
-    fn handle(&mut self, msg: OnlineUpdateUser, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: UpdateUserAuthorize, _: &mut Self::Context) -> Self::Result {
         use crate::schema::users::dsl::*;
         let conn = &self.0.get()?;
 
@@ -85,7 +85,7 @@ impl Handler<OnlineUpdateUser> for DbExecutor {
         }
 
         diesel::update(users.filter(id.eq(msg.id)))
-            .set((njtech_open_id.eq(msg.open_id), email.eq(msg.email), name.eq(msg.realname), school.eq("南京工业大学")))
+            .set((njtech_open_id.eq(msg.open_id), email.eq(msg.email), name.eq(msg.real_name), school.eq("南京工业大学")))
             .execute(conn)?;
 
         Ok(())

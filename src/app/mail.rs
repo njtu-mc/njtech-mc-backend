@@ -6,6 +6,11 @@ use crate::error::Error;
 use crate::send_authorize_code_mail;
 use validator::Validate;
 use crate::util::check_mail_addr;
+use regex::Regex;
+
+lazy_static! {
+    static ref RE_OPEN_ID: Regex = Regex::new(r"^[0-9]*$").unwrap();
+}
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct PostMail {
@@ -17,6 +22,17 @@ pub struct PostMail {
 pub struct UpdateMail {
     #[validate(email)]
     pub mail: String,
+    #[validate(
+    length(
+    min = 6,
+    max = 6,
+    message = "fails validation - must be 1-50 characters long"
+    ),
+    regex(
+    path = "RE_OPEN_ID",
+    message = "fails validation - is not only number characters"
+    )
+    )]
     pub code: String,
     pub id: Option<i32>,
 }

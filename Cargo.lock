@@ -1232,6 +1232,7 @@ dependencies = [
  "num_cpus",
  "rand",
  "redis",
+ "regex",
  "serde",
  "serde_derive",
  "serde_json",

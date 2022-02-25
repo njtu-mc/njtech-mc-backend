@@ -37,7 +37,7 @@ pub fn send_authorize_code_mail(user_id: i32, email_addr: &str) -> Result<(), Er
 pub fn check_mail_addr(user_id: i32, email_addr: &str, code: &str) -> Result<(), Error> {
     let c: String = match REDIS_CONN.lock()?.get(format!("email:{}:{}", email_addr, user_id.to_string())) {
         Ok(c) => c,
-        Err(e) => return Err(Error::BadRequest(json!("验证码错误，请重新发送")))
+        Err(_) => return Err(Error::BadRequest(json!("验证码错误，请重新发送")))
     };
     if c != code {
         return Err(Error::BadRequest(json!("验证码错误，请重新发送")));
