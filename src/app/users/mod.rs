@@ -36,13 +36,13 @@ pub async fn put_user_gender(
 ) -> Result<HttpResponse, Error> {
     let mut form = form.into_inner();
     form.validate()?;
-
     form.id = Some(get_login_user_id(id)?);
+
     let db = state.db.clone();
 
-    let res = db.send(form).await??;
+    let user = db.send(form).await??;
 
-    Ok(HttpResponse::Ok().json(res))
+    Ok(HttpResponse::Ok().json(user))
 }
 
 pub async fn logout(id: Identity) -> Result<HttpResponse, Error> {

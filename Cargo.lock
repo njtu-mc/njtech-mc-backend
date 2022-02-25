@@ -61,22 +61,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "actix-cors"
-version = "0.6.0-beta.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8debd30414af03e9411186aac95e0230b0bb1e91146f48015dfab5c049940223"
-dependencies = [
- "actix-service",
- "actix-utils",
- "actix-web",
- "derive_more",
- "futures-util",
- "log",
- "once_cell",
- "smallvec",
-]
-
-[[package]]
 name = "actix-http"
 version = "3.0.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1230,7 +1214,6 @@ name = "njtech-mc-backend"
 version = "0.1.0"
 dependencies = [
  "actix",
- "actix-cors",
  "actix-http",
  "actix-identity",
  "actix-rt",

@@ -11,6 +11,13 @@ pub struct UpdateGender {
     pub id: Option<i32>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct UpdateUser {
+    pub realname: String,
+    pub email: String,
+    pub open_id: String,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OnlineUser {
     pub realname: String,

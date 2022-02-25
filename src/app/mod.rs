@@ -12,7 +12,6 @@ use actix_web::{
     App, HttpRequest,
     HttpServer,
 };
-use actix_cors::Cors;
 use std::{env, io};
 use std::num::ParseIntError;
 use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
@@ -30,7 +29,6 @@ async fn index(_req: HttpRequest) -> &'static str {
 }
 
 pub async fn start() -> io::Result<()> {
-    let frontend_origin = env::var("FRONTEND_ORIGIN").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let oauth_setting = OauthSetting {
@@ -54,25 +52,10 @@ pub async fn start() -> io::Result<()> {
         let state = AppState {
             db: database_address.clone(),
         };
-        // let cors = match frontend_origin {
-        //     Some(ref _origin) => Cors::default()
-        //         .allowed_origin(_origin)
-        //         .send_wildcard()
-        //         .allow_any_method()
-        //         .allow_any_header()
-        //         .max_age(3600),
-        //     None => Cors::default()
-        //         .allowed_origin("*")
-        //         .send_wildcard()
-        //         .allow_any_method()
-        //         .allow_any_header()
-        //         .max_age(3600),
-        // };
         App::new()
             .app_data(Data::new(oauth_setting.clone()))
             .app_data(Data::new(state))
             .wrap(Logger::default())
-            // .wrap(cors)
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&private_key)
                     .domain("njtumc.org")
@@ -104,13 +87,13 @@ fn routes(app: &mut web::ServiceConfig) {
                 .route(web::post().to(users::post_user_authorize))
             )
             .service(web::resource("user/gender")
-                .route(web::post().to(users::put_user_gender))
                 .route(web::put().to(users::put_user_gender))
             )
             .service(web::resource("user/logout")
                 .route(web::get().to(users::logout))
             )
             .service(web::resource("email")
+                .route(web::put().to(mail::put_mail))
                 .route(web::post().to(mail::post_mail))
             )
         );

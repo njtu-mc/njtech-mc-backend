@@ -4,6 +4,7 @@ use crate::error;
 use crate::error::Error;
 use crate::models::User;
 use diesel::prelude::*;
+use crate::app::mail::UpdateMail;
 use crate::app::users::{OnlineUpdateUser, QueryUser, UpdateGender};
 
 impl Message for UpdateGender {
@@ -44,6 +45,16 @@ impl DbExecutor {
         Ok(())
     }
 
+    fn update_user_mail_by_id(&mut self, _mail: &str, _id: i32) -> Result<(), error::Error> {
+        use crate::schema::users::dsl::*;
+        let conn = &self.0.get()?;
+
+        diesel::update(users.filter(id.eq(_id)))
+            .set(email.eq(_mail))
+            .execute(conn)?;
+        Ok(())
+    }
+
     fn get_user_by_id(&mut self, _id: i32) -> Result<Option<User>, error::Error> {
         use crate::schema::users::dsl::*;
         let conn = &self.0.get()?;
@@ -78,5 +89,20 @@ impl Handler<OnlineUpdateUser> for DbExecutor {
             .execute(conn)?;
 
         Ok(())
+    }
+}
+
+impl Message for UpdateMail {
+    type Result = Result<User, error::Error>;
+}
+
+impl Handler<UpdateMail> for DbExecutor {
+    type Result = Result<User, error::Error>;
+
+    fn handle(&mut self, msg: UpdateMail, _: &mut Self::Context) -> Self::Result {
+        let id = msg.id.ok_or(Error::InternalServerError)?;
+
+        self.update_user_mail_by_id(&msg.mail, id)?;
+        Ok(self.get_user_by_id(id)?.ok_or(Error::Forbidden)?)
     }
 }
