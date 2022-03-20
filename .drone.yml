@@ -55,3 +55,8 @@ volumes:
   - name: cache
     host:
       path: /tmp/cache
+---
+kind: signature
+hmac: 9aee6a228d0eac67cab9e48c9a613b26db350dc423cb324d2d5c51f9ed75ddd7
+
+...
