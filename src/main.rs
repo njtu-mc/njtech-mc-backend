@@ -1,5 +1,3 @@
-#![feature(in_band_lifetimes)]
-
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -22,7 +20,7 @@ mod schema;
 mod util;
 
 #[actix_rt::main]
-async fn main() -> io::Result<()>  {
+async fn main() -> io::Result<()> {
     dotenv::dotenv().ok();
 
     if env::var("RUST_LOG").ok().is_none() {

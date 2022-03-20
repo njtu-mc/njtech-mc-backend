@@ -5,7 +5,7 @@ pub struct OauthSetting {
     pub client_id: String,
     pub client_secret: String,
     pub redirect_url: String,
-    pub online_secret: String
+    pub online_secret: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -64,8 +64,8 @@ pub struct AuthorizationToken<'a> {
     redirect_uri: &'a str,
 }
 
-impl AuthorizationToken<'a> {
-    pub fn new(code: &'a str, setting: &&'a OauthSetting) -> Self {
+impl<'a> AuthorizationToken<'a> {
+    pub fn new(code: &'a str, setting: &'a OauthSetting) -> Self {
         AuthorizationToken {
             client_id: &setting.client_id,
             client_secret: &setting.client_secret,
@@ -96,7 +96,7 @@ pub struct XBLAuthorizationToken<'a> {
     token_type: &'a str,
 }
 
-impl XBLAuthorizationToken<'a> {
+impl<'a>  XBLAuthorizationToken<'a>  {
     pub fn new(token: &'a str) -> Self {
         XBLAuthorizationToken {
             properties: XBLProperties {
@@ -128,7 +128,7 @@ pub struct XSTSAuthorizationToken<'a> {
     token_type: &'a str,
 }
 
-impl XSTSAuthorizationToken<'a> {
+impl<'a> XSTSAuthorizationToken<'a> {
     pub fn new(token: &'a str) -> Self {
         XSTSAuthorizationToken {
             properties: XSTSProperties {
@@ -158,19 +158,19 @@ impl MCAuthorizationToken {
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct MCProfileResp {
     #[validate(
-        length(
-            min = 1,
-            max = 100,
-            message = "fails validation - must be 1-100 characters long"
-        ),
+    length(
+    min = 1,
+    max = 100,
+    message = "fails validation - must be 1-100 characters long"
+    ),
     )]
     pub id: String,
     #[validate(
-        length(
-            min = 1,
-            max = 50,
-            message = "fails validation - must be 1-50 characters long"
-        ),
+    length(
+    min = 1,
+    max = 50,
+    message = "fails validation - must be 1-50 characters long"
+    ),
     )]
     pub name: String,
 }
