@@ -2,8 +2,9 @@ mod form;
 
 pub use self::form::*;
 use std::fmt::Debug;
+use actix_http::HttpMessage;
 use actix_identity::Identity;
-use actix_web::{HttpResponse};
+use actix_web::{HttpRequest, HttpResponse};
 use actix_web::web::{Query};
 use crate::app::AppState;
 use crate::error::Error;
@@ -47,7 +48,7 @@ async fn login(code: &str, setting: &form::OauthSetting) -> Result<MCProfileResp
 pub async fn auth(
     params: Query<AuthQuery>,
     app_state: actix_web::web::Data<AppState>,
-    id: Identity,
+    request: HttpRequest,
     oauth_setting: actix_web::web::Data<OauthSetting>
 ) -> Result<HttpResponse, Error> {
     let mc_profile = login(&params.code, &oauth_setting).await?;
@@ -62,7 +63,7 @@ pub async fn auth(
         }
     }?;
 
-    id.remember(user_id.to_string());
+    Identity::login(&request.extensions(), user_id.to_string()).or(Err(Error::InternalServerError))?;
 
     Ok(
         HttpResponse::Found()

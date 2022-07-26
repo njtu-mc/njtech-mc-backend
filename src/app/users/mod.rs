@@ -47,7 +47,7 @@ pub async fn put_user_gender(
 }
 
 pub async fn logout(id: Identity) -> Result<HttpResponse, Error> {
-    id.forget();
+    id.logout();
 
     Ok(
         HttpResponse::Ok().finish()

@@ -13,10 +13,9 @@ use actix_web::{
     HttpServer,
 };
 use std::{env, io};
-use std::num::ParseIntError;
-use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
-use actix_web::cookie::time::Duration;
-use rand::Rng;
+use actix_identity::{Identity, IdentityMiddleware};
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::cookie::Key;
 use crate::app::oauth::OauthSetting;
 use crate::error::Error;
 
@@ -46,9 +45,15 @@ pub async fn start() -> io::Result<()> {
     let database_address = SyncArbiter::start(num_cpus::get(), move || DbExecutor(database_pool.clone()));
     new_redis();
 
-    let private_key = rand::thread_rng().gen::<[u8; 32]>();
+    let private_key = Key::generate();
 
     let server = HttpServer::new(move || {
+        let session_mw =
+            SessionMiddleware::builder(CookieSessionStore::default(), private_key.clone())
+                // disable secure cookie for local testing
+                .cookie_secure(false)
+                .build();
+
         let state = AppState {
             db: database_address.clone(),
         };
@@ -56,13 +61,8 @@ pub async fn start() -> io::Result<()> {
             .app_data(Data::new(oauth_setting.clone()))
             .app_data(Data::new(state))
             .wrap(Logger::default())
-            .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(&private_key)
-                    .domain("njtumc.org")
-                    .max_age(Duration::days(21))
-                    .name("auth")
-                    .secure(false),
-            ))
+            .wrap(IdentityMiddleware::default())
+            .wrap(session_mw)
             .configure(routes)
     })
         .bind(&bind_address)
@@ -101,9 +101,5 @@ fn routes(app: &mut web::ServiceConfig) {
 }
 
 pub fn get_login_user_id(id: Identity) -> Result<i32, Error> {
-    let id: Result<i32, ParseIntError> = id.identity().ok_or(Error::Unauthorized)?.parse();
-    match id {
-        Ok(id) => Ok(id),
-        Err(_) => Err(Error::Forbidden),
-    }
+   Ok(id.id().or(Err(Error::Unauthorized))?.parse().or(Err(Error::Forbidden))?)
 }

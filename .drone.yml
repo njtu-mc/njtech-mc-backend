@@ -39,24 +39,28 @@ steps:
       rebuild: true
       mount:
         - ./target
-  - name: depoly
+  - name: deploy
     image: harbor.jinhun.moe/library/depoly:latest
     settings:
       host:
-        from_secret: depoly_host
+        from_secret: deploy_host
       username: 
-        from_secret: depoly_username
+        from_secret: deploy_username
       key:
-        from_secret: depoly_key
+        from_secret: deploy_key
       script:
-        from_secret: depoly_script
+        from_secret: deploy_script
 
 volumes:
   - name: cache
     host:
       path: /tmp/cache
+
+image_pull_secrets:
+  - dockerconfig
+
 ---
 kind: signature
-hmac: 9aee6a228d0eac67cab9e48c9a613b26db350dc423cb324d2d5c51f9ed75ddd7
+hmac: f11dba4bb5b70732465aff924d29c6564c514c8af362c8322ab0749efd253ff9
 
 ...
