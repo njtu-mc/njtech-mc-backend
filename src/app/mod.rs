@@ -50,8 +50,8 @@ pub async fn start() -> io::Result<()> {
     let server = HttpServer::new(move || {
         let session_mw =
             SessionMiddleware::builder(CookieSessionStore::default(), private_key.clone())
-                // disable secure cookie for local testing
-                .cookie_secure(false)
+                .cookie_secure(true)
+                .cookie_domain(Some(String::from("njtumc.org")))
                 .build();
 
         let state = AppState {
